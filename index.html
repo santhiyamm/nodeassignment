@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+<style>
+
+body {
+  height:800px;
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.bar {
+  fill: orange;
+}
+
+.bar:hover {
+  fill: orangered ;
+}
+
+
+
+
+
+/* Style northward tooltips differently */
+
+</style>
+</head>
+<body>
+<script src="d3.js"></script>
+
+<script>
+
+var margin = {top: 40, right: 20, bottom: 30, left: 40},
+    width = 10000 - 12 - 2,
+    height = 500 - margin.top - margin.bottom;
+
+
+
+var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], .1);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .ticks(20);
+
+
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", 800 + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+
+d3.json("female.json", function(error, data) {
+
+data.forEach(function(d) {
+        d.CountryName = d.CountryName;
+
+				d.Value = +d.Value;
+    });
+  x.domain(data.map(function(d) { return d.CountryName; }));
+  y.domain([0, d3.max(data, function(d) { return d.Value; })]);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+       .selectAll("text")
+      .attr("transform", "rotate(-90)")
+      .style("text-anchor", "end")
+      .attr("dx", "-0.12em")
+
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y",6)
+      .attr("dy", "1em")
+      .style("text-anchor", "end")
+      .text("Value");
+
+  svg.selectAll(".bar")
+      .data(data)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.CountryName); })
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.Value); })
+      .attr("height", function(d) { return height - y(d.Value); })
+      .on('mouseover', tip.show)
+      .on('mouseout', tip.hide)
+
+});
+
+
+
+</script>
